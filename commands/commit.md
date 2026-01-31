@@ -31,9 +31,5 @@ Analyze changed files, commit, and push to remote.
 - Follow conventional commits format (feat, fix, refactor, docs, chore, etc.).
 - Write commit messages in Korean.
 - If sensitive files (.env, credentials, etc.) are detected, warn the user and exclude them.
-- Always append the following to the end of every commit message:
-    ```
-    Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
-    ```
 - If push fails, analyze the cause and inform the user.
 - If untracked files exist, ask the user whether to include them in the commit.
