@@ -51,6 +51,7 @@ After all commits are complete and pushed, ask the user to choose a merge strate
 
 - Follow conventional commits format (feat, fix, refactor, docs, chore, etc.).
 - Write commit messages in Korean.
+- Before drafting a commit message, run `git log --oneline -10` to review recent commit history. Match the existing commit message style, tone, and conventions (e.g., prefix usage, language patterns, level of detail) to maintain consistency across the project.
 - If sensitive files (.env, credentials, etc.) are detected, warn the user and exclude them.
 - If push fails, analyze the cause and inform the user.
 - If untracked files exist, ask the user whether to include them in the commit.
