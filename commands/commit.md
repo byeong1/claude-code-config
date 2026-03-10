@@ -7,9 +7,21 @@ Analyze changed files, commit, and push to remote.
 1. Run `git status` and `git diff` to identify all changed files and their contents.
 2. If there are no changes, output "No changes to commit." and stop.
 3. Show the user a summary of changed files with a brief description of each change.
-4. Ask the user to choose a commit strategy:
-    - **1. Single commit**: Bundle all changes into one commit
-    - **2. Individual commits**: Split changes into separate commits per file or logical group
+4. Use the `AskUserQuestion` tool to ask the user to choose a commit strategy:
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "커밋 전략을 선택해주세요.",
+    header: "Commit",
+    options: [
+      { label: "Single commit", description: "모든 변경사항을 하나의 커밋으로 묶습니다" },
+      { label: "Individual commits", description: "파일 또는 논리적 그룹별로 커밋을 분리합니다" }
+    ],
+    multiSelect: false
+  }]
+})
+```
 
 5. Proceed based on the user's choice:
 
@@ -28,10 +40,21 @@ Analyze changed files, commit, and push to remote.
 
 ### Post-Commit: Merge Strategy
 
-After all commits are complete and pushed, ask the user to choose a merge strategy:
+After all commits are complete and pushed, use the `AskUserQuestion` tool to ask the user to choose a merge strategy:
 
-- **1. Squash merge**: All commits will be squashed into one when merging to the target branch
-- **2. Regular merge**: All commits will be preserved as-is
+```
+AskUserQuestion({
+  questions: [{
+    question: "머지 전략을 선택해주세요.",
+    header: "Merge",
+    options: [
+      { label: "Squash merge", description: "모든 커밋을 하나로 합쳐서 머지합니다" },
+      { label: "Regular merge", description: "모든 커밋을 그대로 유지합니다" }
+    ],
+    multiSelect: false
+  }]
+})
+```
 
 #### Squash Merge (Option 1)
 
