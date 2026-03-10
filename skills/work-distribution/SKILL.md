@@ -32,16 +32,55 @@ A (root)
 
 ## Step 2: Ask User for Work Mode
 
-If **2 or more files** need modification, present the dependency tree and ask:
+If **2 or more files** need modification, first present the dependency tree visualization as text output, then use the `AskUserQuestion` tool to ask the user which work mode to use.
 
-> This task requires modifying N files with the following dependency structure:
-> [dependency tree visualization]
->
-> 1. Recursive sub-agent processing (each agent handles its file, then spawns child agents for dependent files)
-> 2. Main instance direct processing
+**You MUST use the `AskUserQuestion` tool** (not plain text) to present the choice.
 
-- User selects **1** → Proceed to Step 3 (recursive sub-agent distribution)
-- User selects **2** → Main instance handles all work directly
+### Recommendation Logic
+
+분석 결과를 토대로 **(Recommended)** 표시를 동적으로 결정한다:
+
+| 조건 | 추천 |
+|---|---|
+| 수정 파일 **4개 이상** 또는 의존성 트리 깊이 **2 이상** | Sub-agent 분산 처리 |
+| 수정 파일 **2~3개**이고 의존성 트리 깊이 **1 이하** | 직접 처리 |
+
+**(Recommended)** 는 추천되는 옵션의 label 끝에만 붙인다.
+
+### Example (분산 처리 추천 시)
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "어떤 방식으로 작업을 진행할까요?",
+    header: "Work Mode",
+    options: [
+      { label: "Sub-agent 분산 처리 (Recommended)", description: "각 에이전트가 담당 파일 수정 후 의존 파일에 대해 하위 에이전트를 생성합니다" },
+      { label: "직접 처리", description: "메인 인스턴스가 모든 파일을 직접 순차 수정합니다" }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+### Example (직접 처리 추천 시)
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "어떤 방식으로 작업을 진행할까요?",
+    header: "Work Mode",
+    options: [
+      { label: "Sub-agent 분산 처리", description: "각 에이전트가 담당 파일 수정 후 의존 파일에 대해 하위 에이전트를 생성합니다" },
+      { label: "직접 처리 (Recommended)", description: "메인 인스턴스가 모든 파일을 직접 순차 수정합니다" }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+- User selects **Sub-agent 분산 처리** → Proceed to Step 3 (recursive sub-agent distribution)
+- User selects **직접 처리** → Main instance handles all work directly
 
 ## Step 3: Recursive Sub-agent Distribution (when user selects 1)
 
