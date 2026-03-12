@@ -40,7 +40,12 @@ AskUserQuestion({
 
 ### Post-Commit: Merge Strategy
 
-After all commits are complete and pushed, use the `AskUserQuestion` tool to ask the user to choose a merge strategy:
+After all commits are complete and pushed, check the current branch:
+
+- Run `git branch --show-current` to determine the current branch name.
+- If the current branch is **main** or **master** (i.e., fast-forward workflow), **skip the merge strategy question entirely** and end the process.
+- If the current branch is a **feature/topic branch**, proceed with the merge strategy question below:
+
 
 ```
 AskUserQuestion({
