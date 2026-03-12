@@ -1,6 +1,15 @@
 {
+  "cleanupPeriodDays": 3,
   "attribution": {
     "commit": "",
     "pr": ""
-  }
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "npx claude-limitline --theme tokyo-night",
+    "padding": 0
+  },
+  "enabledPlugins": {},
+  "language": "korean",
+  "alwaysThinkingEnabled": false
 }
