@@ -1,19 +1,37 @@
 ---
-name: work-distribution
+name: work-orchestration
 description: "Invoke this skill whenever a code modification or implementation task requires changes to 2 or more files. This skill analyzes directional file dependencies, builds a dependency tree, and orchestrates recursive sub-agent distribution where each agent modifies its file then spawns child agents for dependent files. Must be invoked BEFORE writing any code when multi-file changes are detected."
 ---
 
-# Work Distribution Protocol
+# Work Orchestration Protocol
 
 When receiving a code modification or implementation request, you MUST follow this process before starting any actual work.
 
-## Step 1: Analyze Scope and Build Dependency Tree
+## Step 1: Analyze Scope via code-explorer
 
-1. Identify all files that need to be modified to fulfill the request.
-2. Analyze **directional dependencies** between files:
-    - Which file imports/depends on which?
-    - Build a tree where parent = depended-on file, child = dependent file
-3. Identify **root files**: files that others depend on, but themselves depend on nothing within the modification scope.
+Analyze the user's request to identify target files, then spawn a `code-explorer` agent (Haiku) to investigate inter-file dependencies. This saves Opus tokens by avoiding direct file reads from the main instance.
+
+### 1-1. Delegate Dependency Analysis to code-explorer
+
+Spawn `code-explorer` with the following prompt:
+
+```
+Analyze the import/require/include relationships between the following files and report a dependency map.
+
+Target files:
+- {file_1}
+- {file_2}
+- ...
+
+Report format:
+1. For each file, list which other target files it imports (exclude external packages)
+2. Directional dependency list: "{file} → {file it depends on}" format
+3. Identify root files: files that are depended on by others but depend on nothing within the target list
+```
+
+### 1-2. Main Instance Builds Dependency Tree
+
+Based on the code-explorer's report, the main instance builds the dependency tree and formulates the execution plan.
 
 ### Dependency Tree Example
 
@@ -38,16 +56,16 @@ If **2 or more files** need modification, first present the dependency tree visu
 
 ### Recommendation Logic
 
-분석 결과를 토대로 **(Recommended)** 표시를 동적으로 결정한다:
+Dynamically determine the **(Recommended)** label based on analysis results:
 
-| 조건 | 추천 |
+| Condition | Recommendation |
 |---|---|
-| 수정 파일 **4개 이상** 또는 의존성 트리 깊이 **2 이상** | Sub-agent 분산 처리 |
-| 수정 파일 **2~3개**이고 의존성 트리 깊이 **1 이하** | 직접 처리 |
+| **4+ files** to modify OR dependency tree depth **≥ 2** | Sub-agent distribution |
+| **2–3 files** to modify AND dependency tree depth **≤ 1** | Direct processing |
 
-**(Recommended)** 는 추천되는 옵션의 label 끝에만 붙인다.
+Append **(Recommended)** only to the recommended option's label.
 
-### Example (분산 처리 추천 시)
+### Example (Sub-agent distribution recommended)
 
 ```
 AskUserQuestion({
@@ -63,7 +81,7 @@ AskUserQuestion({
 })
 ```
 
-### Example (직접 처리 추천 시)
+### Example (Direct processing recommended)
 
 ```
 AskUserQuestion({
@@ -112,37 +130,50 @@ Main Instance (coordinator)
             └── Report to Main Instance
 ```
 
-### Required Sub-agent Prompt
+### Sub-agent Type Selection
 
-When creating a sub-agent, you MUST include the following in its prompt:
+Select the appropriate `subagent_type` based on the task:
+
+| Task type | subagent_type |
+|---|---|
+| Modify existing file | `file-modifier` |
+| Create new file | `file-creator` |
+| Analyze/explore code (no modification) | `code-explorer` |
+
+### Sub-agent Prompt Guidelines
+
+Sub-agent prompts must be **compact yet unambiguous**. Follow this structure strictly.
+
+#### Required Fields
 
 ```
-[Work Distribution Protocol - Recursive Sub-agent Directive]
-
-## Your Assignment
-- File to modify: {assigned_file}
-- Files that depend on your file (your children): {dependent_files_list}
-
-## Execution Steps
-1. Modify your assigned file ({assigned_file}) according to the task requirements.
-
-2. After your modification is COMPLETE, spawn sub-agents for each dependent file:
-   {dependent_files_list}
-   - If multiple dependent files exist with no dependencies between them, spawn them in PARALLEL.
-   - Pass this same directive template to each child agent.
-
-3. Wait for all child agents to complete.
-
-4. Report back:
-   - Your file modification summary
-   - Any issues encountered
-   - Child agent results
-
-## Rules
-- You may ONLY modify your assigned file: {assigned_file}
-- Do NOT modify any other file directly.
-- If you discover additional files need modification outside your scope, report this instead of modifying.
+1. Target file: absolute path of the file to modify
+2. Task: specific changes to make (name exact functions/classes/interfaces)
+3. Rationale: what changed in the parent file and why this file must be updated
+4. Downstream dependents: files that depend on this file and their expected changes
 ```
+
+#### Prompt Template
+
+```
+File: {absolute path}
+
+Task: {specific changes — specify function names, signature changes, type changes, etc.}
+
+Rationale: {change summary} occurred in {parent file}, so {affected part} in this file must be aligned
+
+Downstream dependents:
+- {file A} → {expected change}
+- {file B} → {expected change}
+- (if none, "none")
+```
+
+#### Prohibited Actions
+
+- Do NOT instruct refactoring, improvements, or cleanup outside the task scope
+- Do NOT give vague instructions like "review the entire file and make necessary changes"
+- Do NOT copy the full change history of the parent file — only summarize changes that affect this file
+- Do NOT instruct re-modification of already completed parent file changes
 
 ### Distribution Example
 
@@ -189,7 +220,7 @@ Results bubble up through the tree:
 ### Final Report Structure
 
 ```
-Work Distribution Complete:
+Work Orchestration Complete:
 ├── A: [modification summary]
 │   ├── B: [modification summary]
 │   │   ├── D: [modification summary]

@@ -46,7 +46,6 @@ After all commits are complete and pushed, check the current branch:
 - If the current branch is **main** or **master** (i.e., fast-forward workflow), **skip the merge strategy question entirely** and end the process.
 - If the current branch is a **feature/topic branch**, proceed with the merge strategy question below:
 
-
 ```
 AskUserQuestion({
   questions: [{
