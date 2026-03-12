@@ -5,8 +5,8 @@
  - Over ~50k context: prefer subagents for self-contained tasks, even simple ones — the per-call token tax on large contexts adds up fast.
 
 **Multi-file code modifications:**
- - Defer to the work-distribution rule. That rule handles user prompting and mode selection.
- - When work-distribution invokes sub-agents, those sub-agents MUST still follow this discipline's output rules below.
+ - Defer to the work-orchestration rule. That rule handles user prompting and mode selection.
+ - When work-orchestration invokes sub-agents, those sub-agents MUST still follow this discipline's output rules below.
 
 **Output rules for all sub-agents:**
  - Include in every sub-agent prompt: "Final response under 2000 characters. List outcomes, not process."
