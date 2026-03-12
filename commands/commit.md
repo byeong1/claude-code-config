@@ -48,15 +48,21 @@ AskUserQuestion({
     question: "머지 전략을 선택해주세요.",
     header: "Merge",
     options: [
-      { label: "Squash merge", description: "모든 커밋을 하나로 합쳐서 머지합니다" },
-      { label: "Regular merge", description: "모든 커밋을 그대로 유지합니다" }
+      { label: "Merge commit", description: "모든 커밋을 그대로 유지하며 머지합니다" },
+      { label: "Squash and merge", description: "모든 커밋을 하나로 합쳐서 머지합니다" },
+      { label: "Rebase and merge", description: "커밋을 대상 브랜치 위로 재배치하여 머지합니다" },
+      { label: "Commit only", description: "커밋만 하고 푸시/병합 없이 작업을 계속합니다" }
     ],
     multiSelect: false
   }]
 })
 ```
 
-#### Squash Merge (Option 1)
+#### Merge Commit (Option 1)
+
+- No additional action needed. Inform the user that all commits are pushed and ready for merge.
+
+#### Squash and Merge (Option 2)
 
 - Analyze all commits that were just created (use `git log` to review them).
 - Recommend 3 squash merge commit message candidates:
@@ -66,9 +72,14 @@ AskUserQuestion({
 - Follow the same conventional commits format.
 - Present all 3 options to the user for reference.
 
-#### Regular Merge (Option 2)
+#### Rebase and Merge (Option 3)
 
-- No additional action needed. Inform the user that all commits are pushed and ready for merge.
+- No additional action needed. Inform the user that all commits are pushed and ready for rebase merge.
+
+#### Commit Only (Option 4)
+
+- 푸시와 병합을 수행하지 않는다. 커밋 완료만 알리고 작업을 계속한다.
+- 이후 다시 `/commit`을 실행하여 추가 커밋 및 푸시 시점에 머지 전략을 선택한다.
 
 ### Rules
 
