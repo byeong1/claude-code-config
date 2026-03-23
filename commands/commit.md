@@ -1,13 +1,20 @@
-## Git Commit & Push
+---
+allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git commit:*), Bash(git push:*), Bash(git branch:*), Bash(git merge:*), Bash(git rebase:*), Bash(gh pr create:*)
+description: Analyze changed files, commit, and push to remote
+---
 
-Analyze changed files, commit, and push to remote.
+## Context
 
-### Procedure
+- Current git status: !`git status`
+- Staged and unstaged changes: !`git diff HEAD`
+- Current branch: !`git branch --show-current`
+- Recent commits: !`git log --oneline -10`
 
-1. Run `git status` and `git diff` to identify all changed files and their contents.
-2. If there are no changes, output "No changes to commit." and stop.
-3. Show the user a summary of changed files with a brief description of each change.
-4. Use the `AskUserQuestion` tool to ask the user to choose a commit strategy:
+## Procedure
+
+1. If there are no changes, output "No changes to commit." and stop.
+2. Show the user a summary of changed files with a brief description of each change.
+3. Use the `AskUserQuestion` tool to ask the user to choose a commit strategy:
 
 ```
 AskUserQuestion({
@@ -23,7 +30,7 @@ AskUserQuestion({
 })
 ```
 
-5. Proceed based on the user's choice:
+4. Proceed based on the user's choice:
 
 #### Single Commit (Option 1)
 
@@ -89,7 +96,7 @@ AskUserQuestion({
 
 - Follow conventional commits format (feat, fix, refactor, docs, chore, etc.).
 - Write commit messages in Korean.
-- Before drafting a commit message, run `git log --oneline -10` to review recent commit history. Match the existing commit message style, tone, and conventions (e.g., prefix usage, language patterns, level of detail) to maintain consistency across the project.
+- Match the existing commit message style from the Context section's recent commits.
 - If sensitive files (.env, credentials, etc.) are detected, warn the user and exclude them.
 - If push fails, analyze the cause and inform the user.
 - If untracked files exist, ask the user whether to include them in the commit.
