@@ -8,6 +8,10 @@
 /inspect <파일경로>
 ```
 
+### Prerequisites
+
+Before starting the procedure, MUST run `ToolSearch({ query: "select:AskUserQuestion" })` to fetch the tool schema. Do NOT substitute with plain text questions.
+
 ### Procedure
 
 #### 1단계: 파일 확인
@@ -18,18 +22,40 @@
 
 #### 2단계: 의존성 분석 깊이 선택
 
-사용자에게 선택지를 제시한다:
+`AskUserQuestion` 도구를 사용하여 선택지를 제시한다:
 
-- **1. 직접 의존성**: 대상 파일이 직접 import/require/include 하는 파일만 분석
-- **2. 재귀적 (전체 트리)**: 의존 파일이 또 의존하는 파일까지 재귀적으로 전부 분석
+```
+AskUserQuestion({
+  questions: [{
+    question: "의존성 분석 ��이를 선택해주세요.",
+    header: "Dependency Depth",
+    options: [
+      { label: "직접 의존성", description: "대상 파일이 직접 import/require/include 하는 파일만 분석" },
+      { label: "재귀적 (전체 트리)", description: "의존 파일이 또 의존하는 파일까지 재귀적으로 전부 분석" }
+    ],
+    multiSelect: false
+  }]
+})
+```
 
 #### 3단계: 출력 형식 선택
 
-사용자에게 선택지를 제시한다:
+`AskUserQuestion` 도구를 사용하여 선택지를 제시한다:
 
-- **1. 의존성 트리 + 파일별 요약**: 트리 구조 시각화 + 각 파일의 역할/구조 한 줄 요약
-- **2. 의존성 트리만**: 트리 구조 시각화만 제공
-- **3. 파일별 상세 분석**: 각 파일의 함수, 클래스, export 등 내부 구조 상세 분석
+```
+AskUserQuestion({
+  questions: [{
+    question: "출력 형식을 선택해주세요.",
+    header: "Output Format",
+    options: [
+      { label: "의존성 트리 + 파일별 요약", description: "트리 구조 시각화 + 각 파일의 역할/구조 한 줄 요약" },
+      { label: "의존성 트리만", description: "트리 구조 시각화만 제공" },
+      { label: "파일별 상세 분석", description: "각 파일의 함수, 클래스, export 등 내부 구조 상세 분석" }
+    ],
+    multiSelect: false
+  }]
+})
+```
 
 #### 4단계: 분석 실행
 

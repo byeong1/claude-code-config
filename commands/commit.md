@@ -10,6 +10,10 @@ description: Analyze changed files, commit, and push to remote
 - Current branch: !`git branch --show-current`
 - Recent commits: !`git log --oneline -10`
 
+## Prerequisites
+
+Before starting the procedure, MUST run `ToolSearch({ query: "select:AskUserQuestion" })` to fetch the tool schema. Do NOT substitute with plain text questions.
+
 ## Procedure
 
 1. If there are no changes, output "No changes to commit." and stop.

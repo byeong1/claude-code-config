@@ -1,5 +1,7 @@
 # Work Mode Selection
 
+**IMPORTANT:** Before presenting options, MUST run `ToolSearch({ query: "select:AskUserQuestion" })` to fetch the tool schema. Do NOT substitute with plain text questions.
+
 Present the dependency tree as text output first, then use `AskUserQuestion` to ask the user.
 
 ## Recommendation Logic
