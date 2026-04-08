@@ -1,3 +1,3 @@
 # Work Orchestration Rule
 
-2+ files need modification → invoke `/work-orchestration` before writing any code.
+2+ files need modification or creation → invoke `/work-orchestration` before writing any code.
