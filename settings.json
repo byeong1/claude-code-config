@@ -1,4 +1,9 @@
 {
+  "permissions": {
+    "allow": [
+      "Skill(work-orchestration)"
+    ]
+  },
   "cleanupPeriodDays": 3,
   "attribution": {
     "commit": "",
