@@ -39,13 +39,30 @@ AskUserQuestion({
 #### Single Commit (Option 1)
 
 - Analyze all changes and draft an appropriate commit message.
-- Show the commit message to the user for confirmation.
+- Use `AskUserQuestion` to confirm the commit message before proceeding:
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "<drafted commit message>",
+    header: "Commit Message",
+    options: [
+      { label: "확인", description: "이 메시지로 커밋합니다" },
+      { label: "수정", description: "커밋 메시지를 직접 입력합니다" }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+- If the user selects "수정", ask the user to provide a new commit message via `AskUserQuestion` with a free-text question, then use that message.
 - Execute `git add` → `git commit` → `git push` in sequence.
 
 #### Individual Commits (Option 2)
 
 - Group changed files by logical units (related files together).
-- For each group, draft a commit message and show it to the user for confirmation.
+- For each group, draft a commit message and use `AskUserQuestion` to confirm (same format as Single Commit above).
+- If the user selects "수정", ask the user to provide a new commit message via `AskUserQuestion` with a free-text question, then use that message.
 - Execute `git add` → `git commit` for each group.
 - After all commits are complete, execute `git push`.
 
