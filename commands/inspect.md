@@ -27,7 +27,7 @@ Before starting the procedure, MUST run `ToolSearch({ query: "select:AskUserQues
 ```
 AskUserQuestion({
   questions: [{
-    question: "의존성 분석 ��이를 선택해주세요.",
+    question: "의존성 분석 깊이를 선택해주세요.",
     header: "Dependency Depth",
     options: [
       { label: "직접 의존성", description: "대상 파일이 직접 import/require/include 하는 파일만 분석" },
