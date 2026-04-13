@@ -61,9 +61,24 @@ AskUserQuestion({
 #### Individual Commits (Option 2)
 
 - Group changed files by logical units (related files together).
-- For each group, draft a commit message and use `AskUserQuestion` to confirm (same format as Single Commit above).
-- If the user selects "수정", ask the user to provide a new commit message via `AskUserQuestion` with a free-text question, then use that message.
-- Execute `git add` → `git commit` for each group.
+- Draft a commit message for each group, then batch all groups into a single `AskUserQuestion` call using the `questions` array (max 4 per call).
+
+```
+AskUserQuestion({
+  questions: [
+    { question: "<group 1 commit message>", header: "Commit 1/N", options: [
+      { label: "확인", description: "이 메시지로 커밋합니다" },
+      { label: "수정", description: "커밋 메시지를 직접 입력합니다" }
+    ], multiSelect: false },
+    { question: "<group 2 commit message>", header: "Commit 2/N", options: [...] },
+    ...
+  ]
+})
+```
+
+- If groups exceed 4, split into multiple `AskUserQuestion` calls (max 4 questions each). **All calls must complete before any commit is executed.**
+- If the user selects "수정" for any group, follow up with an additional `AskUserQuestion` to collect the corrected message(s) before proceeding.
+- After all commit messages are confirmed, execute `git add` → `git commit` for each group in sequence.
 - After all commits are complete, execute `git push`.
 
 ### Post-Commit: Merge Strategy
