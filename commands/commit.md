@@ -116,7 +116,7 @@ AskUserQuestion({
     1. **포괄적**: Covers all change categories broadly
     2. **구체적**: Lists specific components/features changed
     3. **간결**: Short and concise summary
-- Follow the same conventional commits format.
+- Follow the same style used for the individual commits (mirror the existing repo style).
 - Present all 3 options to the user for reference.
 
 #### Rebase and Merge (Option 3)
@@ -130,9 +130,9 @@ AskUserQuestion({
 
 ### Rules
 
-- Follow conventional commits format (feat, fix, refactor, docs, chore, etc.).
+- **Match the existing commit message style from the Context section's recent commits. This takes priority over any other format convention.** Examples of patterns to detect and mirror: `[REFACTOR] 메시지`, `[FEAT] 메시지`, `refactor(scope): 메시지`, etc.
+- Only fall back to conventional commits format (feat, fix, refactor, docs, chore, etc.) when the repository has no prior commit history to mirror.
 - Write commit messages in Korean.
-- Match the existing commit message style from the Context section's recent commits.
 - If sensitive files (.env, credentials, etc.) are detected, warn the user and exclude them.
 - If push fails, analyze the cause and inform the user.
 - If untracked files exist, ask the user whether to include them in the commit.
