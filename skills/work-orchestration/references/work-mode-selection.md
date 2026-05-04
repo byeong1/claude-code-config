@@ -2,7 +2,25 @@
 
 **IMPORTANT:** Before presenting options, MUST run `ToolSearch({ query: "select:AskUserQuestion" })` to fetch the tool schema. Do NOT substitute with plain text questions.
 
-Present the dependency tree as text output first, then use `AskUserQuestion` to ask the user.
+## Output Discipline
+
+Before calling `AskUserQuestion`, output ONLY a minimal dependency tree block and a total file count. Nothing else.
+
+**Required format:**
+
+```
+<tree lines here>
+
+Total: N files
+```
+
+**Prohibited in user-facing text:**
+- Narrating the analysis ("의존성 트리가 잡혔습니다", "분석 결과", etc.)
+- Explaining the recommendation or its reasoning ("파일 N개로 Direct 조건 초과", "단순 치환이라 가벼우니", etc.)
+- Section headers like "의존성 트리", "Step 2", "외부 참조"
+- Any commentary about user preference or task complexity
+
+The recommendation and its rationale belong in the `AskUserQuestion` option labels/descriptions, not in surrounding prose.
 
 ## Recommendation Logic
 

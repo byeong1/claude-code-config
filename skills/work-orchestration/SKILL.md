@@ -21,7 +21,7 @@ Spawn a `code-explorer` agent (Haiku) to map import/dependency relationships bet
 
 **MUST read [work-mode-selection.md](references/work-mode-selection.md) before proceeding.**
 
-Present the dependency tree, then use `AskUserQuestion` to let the user choose. Follow the recommendation rules and AskUserQuestion format defined in work-mode-selection.md exactly.
+Output ONLY the minimal dependency tree block + total file count, then immediately call `AskUserQuestion`. No preamble, no recommendation rationale, no section headers. Rationale lives in the option descriptions. See work-mode-selection.md for the exact output format and AskUserQuestion template.
 
 ## Step 3: Execute
 
