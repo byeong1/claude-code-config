@@ -56,7 +56,7 @@ AskUserQuestion({
 ```
 
 - If the user selects "수정", ask the user to provide a new commit message via `AskUserQuestion` with a free-text question, then use that message.
-- Execute `git add` → `git commit` → `git push` in sequence.
+- Execute `git add` → `git commit` in sequence. **Do NOT push yet** — push is decided in the Merge Strategy step below.
 
 #### Individual Commits (Option 2)
 
@@ -79,15 +79,15 @@ AskUserQuestion({
 - If groups exceed 4, split into multiple `AskUserQuestion` calls (max 4 questions each). **All calls must complete before any commit is executed.**
 - If the user selects "수정" for any group, follow up with an additional `AskUserQuestion` to collect the corrected message(s) before proceeding.
 - After all commit messages are confirmed, execute `git add` → `git commit` for each group in sequence.
-- After all commits are complete, execute `git push`.
+- **Do NOT push yet** — push is decided in the Merge Strategy step below.
 
 ### Post-Commit: Merge Strategy
 
-After all commits are complete and pushed, check the current branch:
+After all commits are complete (but **before** pushing), check the current branch:
 
 - Run `git branch --show-current` to determine the current branch name.
-- If the current branch is **main** or **master** (i.e., fast-forward workflow), **skip the merge strategy question entirely** and end the process.
-- If the current branch is a **feature/topic branch**, proceed with the merge strategy question below:
+- If the current branch is **main** or **master** (i.e., fast-forward workflow), execute `git push` and end the process. **Skip the merge strategy question entirely.**
+- If the current branch is a **feature/topic branch**, proceed with the merge strategy question below (push has not been executed yet):
 
 ```
 AskUserQuestion({
@@ -107,10 +107,11 @@ AskUserQuestion({
 
 #### Merge Commit (Option 1)
 
-- No additional action needed. Inform the user that all commits are pushed and ready for merge.
+- Execute `git push`, then inform the user that all commits are pushed and ready for merge.
 
 #### Squash and Merge (Option 2)
 
+- Execute `git push` first.
 - Analyze all commits that were just created (use `git log` to review them).
 - Recommend 3 squash merge commit message candidates:
     1. **포괄적**: Covers all change categories broadly
@@ -121,12 +122,12 @@ AskUserQuestion({
 
 #### Rebase and Merge (Option 3)
 
-- No additional action needed. Inform the user that all commits are pushed and ready for rebase merge.
+- Execute `git push`, then inform the user that all commits are pushed and ready for rebase merge.
 
 #### Commit Only (Option 4)
 
-- 푸시와 병합을 수행하지 않는다. 커밋 완료만 알리고 작업을 계속한다.
-- 이후 다시 `/commit`을 실행하여 추가 커밋 및 푸시 시점에 머지 전략을 선택한다.
+- Do **NOT** push or merge. Only inform the user that commits are complete and continue with the work.
+- Run `/commit` again later to select a merge strategy at the time of additional commits and push.
 
 ### Rules
 
