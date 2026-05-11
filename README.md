@@ -1,6 +1,6 @@
-# Claude Code Config
+# Claude / Codex Config
 
-Claude Code CLI를 위한 개인 설정 파일 모음입니다. 여러 환경(Mac/Windows/데스크탑)에서 동일한 Claude Code 경험을 제공하기 위한 하네스 설정 저장소입니다.
+Claude Code CLI와 Codex를 위한 개인 설정 파일 모음입니다. 여러 환경(Mac/Windows/데스크탑)에서 동일한 에이전트 작업 경험을 제공하기 위한 하네스 설정 저장소입니다.
 
 ## 구조
 
@@ -11,12 +11,14 @@ Claude Code CLI를 위한 개인 설정 파일 모음입니다. 여러 환경(Ma
 | `commands/` | 슬래시 커맨드 정의 |
 | `agents/` | 서브에이전트 정의 |
 | `settings.json` | Claude Code 런타임 설정 |
+| `codex/` | Codex 전역 지시(`AGENTS.md`), rule 모듈, skills, agents |
 | `DECISIONS.md` | 의식적으로 배제한 항목과 이유 |
 | `AUDIT.md` | 하네스 환경 자가 검토용 프롬프트 모음 |
 
 ## 전제
 
-- 본 설정은 `~/.claude/` 디렉토리에 로드되는 것을 전제로 합니다.
+- Claude 설정은 `~/.claude/` 디렉토리에 로드되는 것을 전제로 합니다.
+- Codex 설정은 `~/.codex/` 디렉토리에 로드되는 것을 전제로 합니다.
 - Claude Code CLI가 설치되어 있어야 합니다.
 - 최초 1회는 저장소를 clone한 후 동기화 절차를 수행해야 합니다.
 
@@ -110,6 +112,48 @@ Claude Code 세션을 새로 열고 다음을 확인합니다.
 - 규칙이 반영되었는지 (예: 파일 수정 시도 시 `action-guard`가 발동하는지)
 - 스킬이 목록에 뜨는지
 - 슬래시 커맨드가 작동하는지 (`/inspect`, `/commit` 등)
+
+## Codex 적용
+
+Codex용 설정은 Claude 전용 문법을 그대로 복사하지 않고, Codex가 읽는 전역 지시, rule 모듈, skill, custom agent 형식으로 변환해 `codex/` 아래에 둡니다.
+
+**Windows (PowerShell)**
+
+```powershell
+$src = "$env:USERPROFILE\code\claude\config\codex"
+$dst = "$env:USERPROFILE\.codex"
+
+Copy-Item -LiteralPath "$src\AGENTS.md" -Destination "$dst\AGENTS.md" -Force
+Copy-Item -LiteralPath "$src\rule" -Destination "$dst\rule" -Recurse -Force
+Copy-Item -LiteralPath "$src\skills\*" -Destination "$dst\skills" -Recurse -Force
+Copy-Item -LiteralPath "$src\agents\*" -Destination "$dst\agents" -Recurse -Force
+```
+
+Codex 세션을 새로 열면 다음 항목이 전역으로 적용됩니다.
+
+- `~/.codex/AGENTS.md`
+- `~/.codex/rule/*.md`
+- `~/.codex/skills/work-orchestration`
+- `~/.codex/skills/inspect-dependencies`
+- `~/.codex/skills/git-commit-workflow`
+- `~/.codex/skills/git-branch-cleanup`
+- `~/.codex/skills/codex-settings-sync`
+- `~/.codex/agents/code-explorer.toml`
+- `~/.codex/agents/file-modifier.toml`
+- `~/.codex/agents/file-creator.toml`
+
+### Claude → Codex 매핑
+
+| Claude | Codex |
+|-|-|
+| `rules/*/RULE.md` | `codex/rule/*.md` + `codex/AGENTS.md` 참조 |
+| `skills/work-orchestration` | `codex/skills/work-orchestration` |
+| `commands/inspect.md` | `codex/skills/inspect-dependencies` |
+| `commands/commit.md` | `codex/skills/git-commit-workflow` |
+| `commands/br-clear.md` | `codex/skills/git-branch-cleanup` |
+| `commands/sync-settings.md` | `codex/skills/codex-settings-sync` |
+| `agents/work-orchestration/*.md` | `codex/agents/*.toml` |
+| `settings.json` | `codex/config.toml` + `codex/AGENTS.md` 일부 지시 |
 
 ## 일상 사용 — 업데이트와 동기화
 
