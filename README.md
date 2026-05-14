@@ -20,16 +20,9 @@ Claude Code CLI를 위한 개인 설정 파일 모음입니다. 여러 환경(Ma
 - Claude Code CLI가 설치되어 있어야 합니다.
 - 최초 1회는 저장소를 clone한 후 동기화 절차를 수행해야 합니다.
 
-## 동기화 전략 — 두 가지 도구의 역할
+## 동기화 전략
 
-본 저장소는 **symlink**와 **`/sync-settings` 스킬**을 병행합니다. 두 도구는 서로 대체하는 관계가 아니라 **다른 가치**를 가집니다.
-
-| 도구 | 역할 | 사용 빈도 |
-|-|-|-|
-| **Symlink** | 일상 동기화 자동화 (`git pull` 한 번으로 즉시 반영) | 상시 |
-| **`/sync-settings`** | 머신 간 diff 확인, 실험적 변경 승급, 머신별 분기 | 가끔 |
-
-병행하는 이유는 [`DECISIONS.md`](DECISIONS.md)의 항목 6을 참고하세요.
+본 저장소는 **symlink** 기반으로 동기화합니다. 저장소의 디렉토리/파일을 `~/.claude/`로 연결해두면 `git pull` 한 번으로 모든 머신에 즉시 반영됩니다.
 
 ## 설치 — 최초 clone
 
@@ -75,7 +68,7 @@ foreach ($name in @('rules','skills','commands','agents','settings.json')) {
 
 ### 3. Symlink 생성 — 일상 동기화
 
-저장소의 디렉토리/파일을 `~/.claude/`로 symlink 연결합니다.
+각 머신(macOS/Windows)에서 직접 아래 명령을 실행해 저장소의 디렉토리/파일을 `~/.claude/`로 symlink 연결합니다. symlink 자체는 git에 담기지 않으므로 **머신마다 1회씩 수동으로 만들어야 합니다.**
 
 **macOS / Linux**
 
@@ -88,20 +81,18 @@ ln -s "$PWD/agents"        ~/.claude/agents
 ln -s "$PWD/settings.json" ~/.claude/settings.json
 ```
 
-**Windows (PowerShell, 관리자 권한 또는 개발자 모드 필요)**
+**Windows (관리자 권한 PowerShell)**
 
 ```powershell
 $src = "$env:USERPROFILE\code\claude-code-config"
 $dst = "$env:USERPROFILE\.claude"
 
-New-Item -ItemType SymbolicLink -Path "$dst\rules"         -Target "$src\rules"
-New-Item -ItemType SymbolicLink -Path "$dst\skills"        -Target "$src\skills"
-New-Item -ItemType SymbolicLink -Path "$dst\commands"      -Target "$src\commands"
-New-Item -ItemType SymbolicLink -Path "$dst\agents"        -Target "$src\agents"
-New-Item -ItemType SymbolicLink -Path "$dst\settings.json" -Target "$src\settings.json"
+foreach ($name in @('rules','skills','commands','agents','settings.json')) {
+    New-Item -ItemType SymbolicLink -Path "$dst\$name" -Target "$src\$name" | Out-Null
+}
 ```
 
-> Windows에서 symlink 생성 권한이 없다면, 설정 → 개발자 모드를 활성화하면 일반 사용자도 가능합니다.
+> Windows는 symlink 생성에 관리자 권한이 필요합니다. 개발자 모드만 켜져 있어도 일부 환경에서는 권한이 부여되지 않으므로, 시작 메뉴에서 PowerShell을 우클릭 → "관리자 권한으로 실행"으로 여는 것이 가장 확실합니다.
 
 ### 4. 설치 검증
 
@@ -135,22 +126,6 @@ git add rules/some-rule/RULE.md
 git commit -m "..."
 git push
 ```
-
-### 머신 간 차이 확인 또는 실험 승급 — `/sync-settings`
-
-Symlink로 연결된 환경에서는 `~/.claude/`와 저장소가 동일하므로 일반적으로 `/sync-settings`가 필요 없습니다. 다만 다음 상황에서 사용합니다.
-
-- **머신 간 의도치 않은 분기 발생** — 예: 한 머신에서 symlink가 풀리고 직접 파일을 수정한 경우
-- **실험적 변경의 승급** — 어떤 머신에서만 임시로 직접 파일을 두고 검증한 후, 결과가 좋으면 저장소로 올리고 싶을 때
-- **머신별 부분 적용** — 일부 규칙만 특정 머신에 다르게 적용하고 싶을 때 (이 경우 해당 항목만 symlink를 풀고 sync-settings로 관리)
-
-Claude Code 세션에서:
-
-```
-/sync-settings
-```
-
-이 스킬은 양방향 diff를 보여주고 명시적 승인 후에만 변경을 적용합니다. 자세한 동작은 `commands/sync-settings.md`를 참고하세요.
 
 ## 설계 철학
 
