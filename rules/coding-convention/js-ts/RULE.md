@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.{ts,tsx,js,jsx,mjs,cjs,vue}"
+---
+
 # JavaScript / TypeScript Convention
 
 **Comments:**
