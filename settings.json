@@ -1,13 +1,17 @@
 {
-  "permissions": {
-    "allow": [
-      "Skill(work-orchestration)"
-    ]
-  },
   "cleanupPeriodDays": 3,
+  "env": {
+    "CLAUDE_CODE_USE_POWERSHELL_TOOL": "1"
+  },
   "attribution": {
     "commit": "",
     "pr": ""
+  },
+  "permissions": {
+    "allow": [
+      "Skill(work-orchestration)",
+      "Read"
+    ]
   },
   "statusLine": {
     "type": "command",
@@ -16,7 +20,7 @@
   },
   "language": "korean",
   "alwaysThinkingEnabled": false,
-  "env": {
-    "CLAUDE_CODE_USE_POWERSHELL_TOOL": "1"
-  }
+  "autoCompactEnabled": false,
+  "remoteControlAtStartup": false,
+  "agentPushNotifEnabled": true
 }
