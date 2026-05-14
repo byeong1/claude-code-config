@@ -1,6 +1,6 @@
 ---
 name: file-creator
-description: 새 파일을 생성하고, 하위 의존 파일에 대해 서브에이전트를 재귀적으로 spawn하는 에이전트
+description: Agent that creates new files and recursively spawns sub-agents for dependent files
 model: sonnet
 tools: Read, Write, Glob, Grep, Agent
 permissionMode: acceptEdits

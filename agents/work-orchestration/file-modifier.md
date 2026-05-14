@@ -1,6 +1,6 @@
 ---
 name: file-modifier
-description: 지정된 파일을 수정하고, 하위 의존 파일에 대해 서브에이전트를 재귀적으로 spawn하는 에이전트
+description: Agent that modifies the specified files and recursively spawns sub-agents for dependent files
 model: sonnet
 tools: Read, Edit, Glob, Grep, Agent
 permissionMode: acceptEdits
