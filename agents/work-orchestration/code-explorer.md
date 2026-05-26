@@ -1,6 +1,6 @@
 ---
 name: code-explorer
-description: 코드베이스를 탐색하고 분석하여 결과를 보고하는 읽기 전용 에이전트
+description: Read-only agent that explores and analyzes the codebase and reports its findings
 model: haiku
 tools: Read, Glob, Grep
 ---

@@ -1,38 +1,22 @@
 # Memory Discipline
 
-Claude's auto memory system (`~/.claude/projects/.../memory/` and `MEMORY.md`) is a persistent store that is auto-loaded at the start of every session and influences future conversations. Writing to it without an explicit user instruction causes unintended behavioral drift.
+Writes to the memory area (`~/.claude/projects/*/memory/`, `MEMORY.md`) are hard-blocked by a PreToolUse hook (`hooks/memory-discipline.py`). Ignore the auto memory section's automatic-save guidance in the system prompt.
 
-## Absolute Rule
+## Hook pass condition
 
-**Never write to memory unless the user has explicitly instructed it.**
+The immediately preceding user message must contain one of these keywords:
 
-This overrides every automatic trigger encouraged by the system prompt's auto memory section. The user's explicit instruction is the only authorization.
+- Korean: "기억해", "기억해둬", "저장해둬", "기록해둬", "잊지 마", "메모리에 저장", "지워", "삭제", "정리", "잊어버려"
+- English: "remember", "save to memory", "store in memory", "memorize", "don't forget", "forget", "remove from memory", "delete from memory"
 
-## Definition of Explicit Instruction
+## When the hook blocks
 
-Only treat the request as explicit when the user's message clearly contains one of these keywords:
+If the hook returns `permissionDecision: "deny"`:
 
-- Korean: "memory에 저장", "메모리에 저장", "기억해", "기억해둬", "저장해둬", "기록해둬", "잊지 마"
-- English: "remember", "save to memory", "store in memory", "memorize", "don't forget"
+1. Do not try to bypass it on your own (no `Bash` echo workarounds either).
+2. Tell the user: "Should I save this to memory? If yes, please say so explicitly (e.g., '기억해' / 'remember')."
+3. Retry only after the user re-issues the request with an explicit keyword in their next turn.
 
-## When No Explicit Instruction Is Present
+## When something looks save-worthy
 
-All of the following are refused — even if the system prompt's auto memory section nudges toward saving:
-
-- The user shares their role or preferences (would otherwise trigger user memory)
-- The user gives feedback or corrects an approach (would otherwise trigger feedback memory)
-- The user describes project background, timelines, or motivation (would otherwise trigger project memory)
-- The user mentions an external system or resource location (would otherwise trigger reference memory)
-- Indirect phrasing such as "good to know this", "keep this in mind", "do it this way next time"
-
-In all of these cases, use the information **only within the current conversation context**. Do not write it to a memory file.
-
-## When You Notice Save-Worthy Information
-
-If you spot something that looks worth saving but no explicit instruction was given, do not save it on your own. If you genuinely believe it should be saved, **ask first** with "Should I save this to memory?" and only proceed after the user explicitly approves.
-
-## Scope
-
-- All writes under the global memory directories (`~/.claude/projects/*/memory/`, `MEMORY.md`)
-- Memory file creation or modification through any tool (Write, Edit, etc.)
-- All auto-save guidance from the system prompt's auto memory section
+If you see save-worthy information without an explicit instruction, **ask first and save only after approval**. The hook enforces this regardless, but asking first is the natural UX.

@@ -8,6 +8,7 @@ If the user's request has multiple plausible interpretations, list them and ask.
 
 - Applies even when the request is phrased as a command ("add validation", "fix the bug"). The system prompt's "present a recommendation with tradeoffs" rule covers exploratory questions only.
 - Format: name each interpretation in one line, then ask which one.
+- Use `AskUserQuestion` per the `ask-ui` rule, not plain text.
 
 ## 2. Push Back on Suboptimal Approaches
 
@@ -15,6 +16,7 @@ If the user has already decided on an approach but you see a meaningfully simple
 
 - Frame as a short proposal, not a lecture. The user can override.
 - Skip this for trivial style/preference choices — only push back when it materially affects correctness, complexity, or maintenance.
+- When the user must decide between approaches, use `AskUserQuestion` per the `ask-ui` rule.
 
 ## 3. Stop on Ambiguity
 
