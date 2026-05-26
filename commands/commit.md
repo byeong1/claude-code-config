@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git commit:*), Bash(git push:*), Bash(git branch:*), Bash(git merge:*), Bash(git rebase:*), Bash(gh pr create:*)
+allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git commit:*), Bash(git push:*), Bash(git branch:*)
 description: Analyze changed files, commit, and push to remote
 ---
 
@@ -113,12 +113,25 @@ AskUserQuestion({
 
 - Execute `git push` first.
 - Analyze all commits that were just created (use `git log` to review them).
-- Recommend 3 squash merge commit message candidates:
-    1. **포괄적**: Covers all change categories broadly
-    2. **구체적**: Lists specific components/features changed
-    3. **간결**: Short and concise summary
-- Follow the same style used for the individual commits (mirror the existing repo style).
-- Present all 3 options to the user for reference.
+- Draft a **포괄적 (comprehensive)** squash merge commit message that covers all change categories broadly. Follow the same style used for the individual commits (mirror the existing repo style).
+- Confirm via `AskUserQuestion`:
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "<drafted 포괄적 message>",
+    header: "Squash Message",
+    options: [
+      { label: "이 메시지로", description: "포괄적 메시지로 squash 머지를 진행합니다" },
+      { label: "구체적으로 다시", description: "변경된 컴포넌트/기능을 구체적으로 나열한 메시지로 재작성합니다" }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+- "구체적으로 다시" 선택 시: 구체적 톤으로 재작성한 메시지를 동일한 `AskUserQuestion` 패턴(단, 옵션은 "이 메시지로" / "직접 입력")으로 한 번 더 확인.
+- "Other" 자유 입력은 항상 사용 가능 — 사용자가 직접 메시지를 입력하면 그대로 사용.
 
 #### Rebase and Merge (Option 3)
 
