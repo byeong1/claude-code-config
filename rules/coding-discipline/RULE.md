@@ -37,6 +37,7 @@ When editing a file, modify only what the task requires. Leave neighboring code,
 - No "while I'm here" cleanup of unrelated code.
 - No silent style/formatting changes to lines you didn't need to touch.
 - Match the file's existing style even if it conflicts with your preference.
+- **This rule overrides global `coding-convention/*` rules.** When a file or project already has an established style, follow it instead of the global convention. Global conventions apply only to new files or solo projects with no prior style.
 
 ## 6. Dead Code Cleanup Scope
 
