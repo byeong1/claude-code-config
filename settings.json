@@ -20,6 +20,7 @@
   },
   "language": "korean",
   "alwaysThinkingEnabled": false,
+  "effortLevel": "medium",
   "autoCompactEnabled": false,
   "remoteControlAtStartup": false,
   "agentPushNotifEnabled": true

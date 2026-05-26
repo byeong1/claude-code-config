@@ -106,6 +106,27 @@
 
 ---
 
+### 6. work-orchestration Sub-agent의 Bash 도구
+
+**상태**: Rejected (배제)
+
+**배제 이유**:
+- `file-modifier`, `file-creator`, `code-explorer` 모두 frontmatter `tools`에서 Bash를 제외함
+- Sub-agent는 **부분 상태에서 병렬 실행**되므로 typecheck/lint/test 같은 전체 프로젝트 검증을 시키면 의미 없는 결과가 나오고, 에러 해석을 위해 자기 담당 파일 밖까지 Read 범위를 확장함
+- 검증 책임은 **모든 sub-agent 완료 후 메인 인스턴스**가 가짐 (`skills/work-orchestration/references/sub-agent-distribution.md`의 "Prohibited Actions" 참고)
+- Bash 허용 시 sub-agent가 자기 일 끝나고 "확인 차" 명령 실행 → prohibited 위반, 병렬 race condition, 권한 회색지대(file-creator가 기존 파일 건드림) 위험 발생
+
+**재평가 트리거**:
+- 코드 생성 도구(Prisma, Drizzle, Rails, Django 등) 기반 프로젝트가 주 업무가 되어, 파일 생성 후 매번 `prisma generate` 같은 후속 명령을 main이 따로 실행하는 핸드오프 비용이 누적될 때
+- 특정 생성기 1~2개만 sub-agent에 위임하면 명백히 효율이 큰 패턴이 반복 관찰될 때
+
+**도입하게 된다면의 방향**:
+- 범용 Bash 허용은 절대 금지
+- `file-creator`에만 `Bash(<생성기 화이트리스트>:*)` 명시적 화이트리스트 추가
+- 또는 sub-agent prompt template에 `Post-completion command` 필드를 추가하여 main이 받아 실행 (Bash 권한 없이도 가능)
+
+---
+
 ## 재평가 주기
 
 - **분기마다 1회** 본 문서를 훑으며 재평가 트리거가 발생했는지 점검
