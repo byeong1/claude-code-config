@@ -87,69 +87,33 @@ Output in this format:
 
 `AskUserQuestion` requires `options.minItems: 2`. Free-text input is provided automatically by the tool's built-in **Other** button — do NOT add a manual "직접 입력" / "경로 입력" option. Doing so duplicates the auto-Other and violates `~/.claude/rules/ask-ui/RULE.md`.
 
-1. Read the git status / diff already in the Context section. Extract up to **4** modified or untracked file paths as suggested options.
-2. If fewer than 2 git-change options are available, append `"취소"` as a real opt-out option so the array still satisfies `minItems: 2`.
+**Build the options array dynamically:**
 
-**Case A — 2 or more git changes:**
+1. From the git status / diff in the Context section, extract up to **4** modified or untracked file paths. Each becomes `{ label: "<path>", description: "최근 변경된 파일" }`.
+2. If the resulting array has fewer than 2 items, append `{ label: "취소", description: "구조 파악을 중단합니다" }` until length ≥ 2.
+3. If there are 0 git changes, also append `{ label: "도움말 보기", description: "스킬 사용법 안내 후 종료합니다" }`.
 
-```
-AskUserQuestion({
-  questions: [{
-    question: "분석할 파일을 선택해주세요. (직접 경로를 입력하려면 Other 사용)",
-    header: "Target File",
-    options: [
-      { label: "<git changed file 1>", description: "최근 변경된 파일" },
-      { label: "<git changed file 2>", description: "최근 변경된 파일" },
-      { label: "<git changed file 3>", description: "최근 변경된 파일" },
-      { label: "<git changed file 4>", description: "최근 변경된 파일" }
-    ],
-    multiSelect: false
-  }]
-})
-```
-
-- Include only as many git-change options as actually exist (max 4).
-- If the user selects a git-changed option, use that path directly as the target.
-- If the user selects the auto-injected Other (free input), use the typed path.
-
-**Case B — 1 git change:**
+**Call template:**
 
 ```
 AskUserQuestion({
   questions: [{
     question: "분석할 파일을 선택해주세요. (직접 경로를 입력하려면 Other 사용)",
     header: "Target File",
-    options: [
-      { label: "<git changed file 1>", description: "최근 변경된 파일" },
-      { label: "취소", description: "구조 파악을 중단합니다" }
-    ],
+    options: <array built above>,
     multiSelect: false
   }]
 })
 ```
 
-**Case C — 0 git changes:**
+**Handle the response:**
 
-```
-AskUserQuestion({
-  questions: [{
-    question: "분석할 파일 경로를 입력해주세요. Other를 눌러 직접 입력하거나, 중단하려면 취소를 선택하세요.",
-    header: "Target File",
-    options: [
-      { label: "취소", description: "구조 파악을 중단합니다" },
-      { label: "도움말 보기", description: "스킬 사용법 안내 후 종료합니다" }
-    ],
-    multiSelect: false
-  }]
-})
-```
+- A git-change option → use that path directly as the target.
+- The auto-injected **Other** (free input) → use the typed path.
+- "취소" → stop the procedure.
+- "도움말 보기" → output a short usage hint (`/follow-up <파일경로>` direct argument is supported) and stop.
 
-- "도움말 보기" 선택 시: 짧은 사용법(`/follow-up <파일경로>` 직접 인수 전달 가능)을 안내하고 종료.
-
-**Common to all cases:**
-
-- If the user selects "취소", stop the procedure.
-- Do NOT pre-verify the entered path. Pass it straight to B-2 — B-2's initial Read will surface a missing-file error if the path is invalid.
+Do NOT pre-verify the entered path. Pass it straight to B-2 — B-2's initial Read will surface a missing-file error if the path is invalid.
 
 #### B-2. Recursive Dependency Analysis
 

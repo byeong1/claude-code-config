@@ -5,10 +5,9 @@
 Each agent follows the same recursive pattern:
 
 1. Modify its assigned file
-2. Identify files that depend on the modified file
-3. Spawn sub-agents for those dependent files (parallel if independent)
-4. Wait for all child agents to complete
-5. Report results back to parent
+2. Spawn sub-agents for the child files specified in the prompt's `Downstream dependents` section (parallel if independent). Do NOT re-analyze dependencies — the parent has already resolved them in Step 1 and embedded the child specs in this prompt.
+3. Wait for all child agents to complete
+4. Report results back to parent
 
 ## Execution Flow
 
@@ -44,9 +43,17 @@ Task: {specific changes — specify function names, signature changes, type chan
 Rationale: {change summary} occurred in {parent file}, so {affected part} in this file must be aligned
 
 Downstream dependents:
-- {file A} → {expected change}
-- {file B} → {expected change}
-- (if none, "none")
+- {child file A absolute path}
+  Task: {specific changes for child A}
+  Rationale: {why A must change given this file's change}
+  Downstream dependents: {grandchild specs in the same nested format, or "none"}
+- {child file B absolute path}
+  Task: ...
+  Rationale: ...
+  Downstream dependents: ...
+- (if none, write "none")
+
+Response constraint: Final response under {N} characters. List outcomes only, not process.
 ```
 
 ### Required Fields
@@ -54,7 +61,8 @@ Downstream dependents:
 1. **Target file**: absolute path
 2. **Task**: specific changes (name exact functions/classes/interfaces)
 3. **Rationale**: what changed in the parent file and why this file must be updated
-4. **Downstream dependents**: files depending on this file and their expected changes
+4. **Downstream dependents**: full nested spec (File / Task / Rationale / Downstream dependents) for every child the sub-agent must spawn. The parent — not the sub-agent — resolves dependencies in Step 1 and writes the child specs here. Sub-agents spawn children verbatim from this list without re-analyzing imports.
+5. **Response constraint**: maximum character count and "outcomes only" directive, per the global `subagent-discipline` rule
 
 ## Prohibited Actions
 
@@ -62,6 +70,7 @@ Downstream dependents:
 - Do NOT give vague instructions like "review the entire file and make necessary changes"
 - Do NOT copy the full change history of the parent file — only summarize changes that affect this file
 - Do NOT instruct re-modification of already completed parent file changes
+- Do NOT instruct sub-agents to run typecheck, lint, tests, or any whole-project verification — these are the main instance's responsibility, performed after all sub-agents complete. Sub-agents work on partial state, may run in parallel, and would expand their Read scope beyond their assigned file to interpret errors.
 
 ## Distribution Example
 
