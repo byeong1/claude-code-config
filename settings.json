@@ -1,59 +1,57 @@
 {
-  "cleanupPeriodDays": 3,
-  "env": {
-    "CLAUDE_CODE_USE_POWERSHELL_TOOL": "1"
-  },
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  },
-  "permissions": {
-    "allow": [
-      "Skill(work-orchestration)",
-      "Read"
-    ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "npx claude-limitline --theme tokyo-night",
-    "padding": 0
-  },
-  "language": "korean",
-  "alwaysThinkingEnabled": false,
-  "autoCompactEnabled": false,
-  "remoteControlAtStartup": false,
-  "agentPushNotifEnabled": true,
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"$HOME/.claude/hooks/memory-discipline.py\""
-          }
+    "cleanupPeriodDays": 3,
+    "env": {
+        "CLAUDE_CODE_USE_POWERSHELL_TOOL": "1"
+    },
+    "attribution": {
+        "commit": "",
+        "pr": ""
+    },
+    "permissions": {
+        "allow": ["Skill(work-orchestration)", "Read"]
+    },
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "python \"$HOME/.claude/hooks/memory-discipline.py\""
+                    }
+                ]
+            }
+        ],
+        "SessionStart": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "python \"$HOME/.claude/hooks/cleanup-tmp.py\""
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "python \"$HOME/.claude/hooks/cleanup-tmp.py\""
+                    }
+                ]
+            }
         ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"$HOME/.claude/hooks/cleanup-tmp.py\""
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"$HOME/.claude/hooks/cleanup-tmp.py\""
-          }
-        ]
-      }
-    ]
-  }
+    },
+    "statusLine": {
+        "type": "command",
+        "command": "npx claude-limitline --theme tokyo-night",
+        "padding": 0
+    },
+    "language": "korean",
+    "alwaysThinkingEnabled": false,
+    "effortLevel": "medium",
+    "autoCompactEnabled": false,
+    "remoteControlAtStartup": false,
+    "agentPushNotifEnabled": true
 }
