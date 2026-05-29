@@ -13,17 +13,6 @@
       "Read"
     ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "npx claude-limitline --theme tokyo-night",
-    "padding": 0
-  },
-  "language": "korean",
-  "alwaysThinkingEnabled": false,
-  "effortLevel": "medium",
-  "autoCompactEnabled": false,
-  "remoteControlAtStartup": false,
-  "agentPushNotifEnabled": true,
   "hooks": {
     "PreToolUse": [
       {
@@ -56,5 +45,20 @@
         ]
       }
     ]
-  }
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "npx claude-limitline --theme tokyo-night",
+    "padding": 0
+  },
+  "enabledPlugins": {
+    "rust-analyzer-lsp@claude-plugins-official": true
+  },
+  "language": "korean",
+  "alwaysThinkingEnabled": false,
+  "effortLevel": "medium",
+  "skipWorkflowUsageWarning": true,
+  "autoCompactEnabled": false,
+  "remoteControlAtStartup": false,
+  "agentPushNotifEnabled": true
 }
