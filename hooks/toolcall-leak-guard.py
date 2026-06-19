@@ -33,21 +33,14 @@ MAX_RETRIES = 3
 CODE_FENCE_PATTERN = re.compile(r"```.*?```", re.DOTALL)
 INLINE_CODE_PATTERN = re.compile(r"`[^`\n]*`")
 
-# A genuine leak looks like a real (mis-serialized) tool call, not a bare mention
-# of a tag token. We require either:
-#   - an opening tag that carries a name= attribute (e.g. <invoke name="...">), or
-#   - a matched opening+closing tag pair for invoke/parameter.
-# A lone token like `<invoke>` or the word "parameter" in prose does NOT match.
-OPEN_TAG_WITH_NAME = re.compile(
-    r"<(?:antml:)?(?:invoke|parameter)\b[^>]*\bname\s*=",
-    re.IGNORECASE,
-)
-OPEN_TAG = re.compile(
-    r"<(?:antml:)?(invoke|parameter)\b",
-    re.IGNORECASE,
-)
-CLOSE_TAG = re.compile(
-    r"</(?:antml:)?(invoke|parameter)>",
+# Any invoke/parameter tag — opening (<invoke ...) or closing (</invoke>) — that
+# survives code-span stripping is a leaked tool call. A real tool call never
+# appears as text in the response body, so we don't require a name= attribute or
+# a matched open/close pair: a partial/truncated leak (e.g. just `<invoke name=`)
+# must still be caught. Quoted tags inside code fences/inline code are stripped
+# first (strip_code) so prose that documents these tags isn't flagged.
+LEAK_TAG = re.compile(
+    r"</?(?:antml:)?(?:invoke|parameter)\b",
     re.IGNORECASE,
 )
 
@@ -110,11 +103,7 @@ def has_leak(text: str) -> bool:
     if not text:
         return False
     stripped = strip_code(text)
-    if OPEN_TAG_WITH_NAME.search(stripped):
-        return True
-    has_open = bool(OPEN_TAG.search(stripped))
-    has_close = bool(CLOSE_TAG.search(stripped))
-    return has_open and has_close
+    return bool(LEAK_TAG.search(stripped))
 
 
 def leak_streak(transcript_path: str) -> int:
