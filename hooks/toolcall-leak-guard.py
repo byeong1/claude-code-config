@@ -1,0 +1,173 @@
+#!/usr/bin/env python3
+"""
+toolcall-leak-guard Stop hook.
+
+Detects the failure mode where a model's tool call is not serialized as a real
+tool invocation but leaks into the assistant response body as raw text
+(`<invoke ...>`, `<parameter ...>`, `</invoke>` ...). The hook fires on Stop,
+inspects the last assistant message, and:
+
+  - clean response         -> exit 0 (allow stop)
+  - leak, 1st-2nd in a row -> exit 2, tell the model to retry the intended
+                              tool call in proper format
+  - leak, 3rd in a row     -> exit 2, tell the model to STOP retrying and instead
+                              write a session-handoff prompt (no tool calls)
+
+The streak is computed by scanning the transcript backwards over consecutive
+assistant turns, so no on-disk counter state is needed.
+
+See `rules/toolcall-leak-guard/RULE.md` for rationale.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import sys
+from pathlib import Path
+
+MAX_RETRIES = 3
+
+# Code fences (```...```) and inline code (`...`) where tags are quoted for
+# explanation, not leaked. Stripped before leak detection to avoid false positives.
+CODE_FENCE_PATTERN = re.compile(r"```.*?```", re.DOTALL)
+INLINE_CODE_PATTERN = re.compile(r"`[^`\n]*`")
+
+# A genuine leak looks like a real (mis-serialized) tool call, not a bare mention
+# of a tag token. We require either:
+#   - an opening tag that carries a name= attribute (e.g. <invoke name="...">), or
+#   - a matched opening+closing tag pair for invoke/parameter.
+# A lone token like `<invoke>` or the word "parameter" in prose does NOT match.
+OPEN_TAG_WITH_NAME = re.compile(
+    r"<(?:antml:)?(?:invoke|parameter)\b[^>]*\bname\s*=",
+    re.IGNORECASE,
+)
+OPEN_TAG = re.compile(
+    r"<(?:antml:)?(invoke|parameter)\b",
+    re.IGNORECASE,
+)
+CLOSE_TAG = re.compile(
+    r"</(?:antml:)?(invoke|parameter)>",
+    re.IGNORECASE,
+)
+
+
+def strip_code(text: str) -> str:
+    """Remove fenced and inline code spans so quoted tags aren't flagged."""
+    text = CODE_FENCE_PATTERN.sub("", text)
+    text = INLINE_CODE_PATTERN.sub("", text)
+    return text
+
+
+def stringify_content(content) -> str:
+    if content is None:
+        return ""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, dict):
+                if block.get("type") == "text":
+                    parts.append(block.get("text", ""))
+            elif isinstance(block, str):
+                parts.append(block)
+        return "\n".join(parts)
+    return ""
+
+
+def iter_messages(transcript_path: str):
+    """Yield (role, text) for each transcript entry, oldest to newest."""
+    if not transcript_path or not Path(transcript_path).is_file():
+        return
+    try:
+        with open(transcript_path, "r", encoding="utf-8") as transcript_file:
+            lines = transcript_file.readlines()
+    except OSError:
+        return
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        message = entry.get("message")
+        if isinstance(message, dict):
+            role = message.get("role")
+            content = message.get("content")
+        else:
+            role = entry.get("role")
+            content = entry.get("content")
+
+        yield role, stringify_content(content)
+
+
+def has_leak(text: str) -> bool:
+    if not text:
+        return False
+    stripped = strip_code(text)
+    if OPEN_TAG_WITH_NAME.search(stripped):
+        return True
+    has_open = bool(OPEN_TAG.search(stripped))
+    has_close = bool(CLOSE_TAG.search(stripped))
+    return has_open and has_close
+
+
+def leak_streak(transcript_path: str) -> int:
+    """Count consecutive trailing assistant messages that contain a leak."""
+    assistant_texts = [
+        text for role, text in iter_messages(transcript_path) if role == "assistant"
+    ]
+    streak = 0
+    for text in reversed(assistant_texts):
+        if has_leak(text):
+            streak += 1
+        else:
+            break
+    return streak
+
+
+RETRY_MESSAGE = (
+    "toolcall-leak-guard: Your last response leaked raw tool-call tags "
+    "(<invoke>/<parameter>) into the message body as text — the tool call was "
+    "NOT executed. Re-issue the intended tool call(s) now in proper tool-call "
+    "format. Do not repeat the raw tags as text."
+)
+
+HANDOFF_MESSAGE = (
+    "toolcall-leak-guard: The tool call has now leaked into the response body "
+    f"{MAX_RETRIES} times in a row. STOP retrying the tool call. Instead, write a "
+    "concise session-handoff prompt the user can paste into a fresh session: "
+    "summarize the current goal, decisions already made, work completed, what "
+    "remains, and the exact file paths / commands involved. Do NOT make any tool "
+    "calls in this response — output the handoff prompt as plain text only."
+)
+
+
+def main() -> int:
+    try:
+        payload = json.load(sys.stdin)
+    except json.JSONDecodeError:
+        return 0
+
+    # Avoid an infinite Stop loop if the model is already being re-invoked by us.
+    if payload.get("stop_hook_active"):
+        return 0
+
+    transcript_path = payload.get("transcript_path", "")
+    streak = leak_streak(transcript_path)
+
+    if streak == 0:
+        return 0
+
+    message = HANDOFF_MESSAGE if streak >= MAX_RETRIES else RETRY_MESSAGE
+    print(message, file=sys.stderr)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())
