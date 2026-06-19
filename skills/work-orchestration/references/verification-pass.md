@@ -37,8 +37,7 @@ Risk items to verify (one check per item):
 
 Required checks:
 1. For each risk item: run the specific check, report count and locations
-2. Run project typecheck/lint and report exit status
-3. Confirm "Out of scope" items in acceptance criteria were not modified
+2. Confirm "Out of scope" items in acceptance criteria were not modified
 
 Output format:
 PASS  | <check name> | <evidence (count, command output, etc.)>
@@ -56,8 +55,7 @@ Main instance performs in its own context:
 
 1. **Re-read acceptance criteria** — output the Step 2 block to refresh attention
 2. **For each risk item**: run the specific check inline (grep, file existence, etc.)
-3. **Run typecheck/lint** if the project has them
-4. **Confirm out-of-scope items not touched** — `git diff --stat` or equivalent
+3. **Confirm out-of-scope items not touched** — `git diff --stat` or equivalent
 
 Report in the same `PASS | FAIL | SKIP` format as Full Verification.
 

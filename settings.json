@@ -78,8 +78,14 @@
   "alwaysThinkingEnabled": false,
   "effortLevel": "medium",
   "autoUpdatesChannel": "latest",
+  "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
   "autoCompactEnabled": false,
   "remoteControlAtStartup": false,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "voiceEnabled": true,
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  }
 }

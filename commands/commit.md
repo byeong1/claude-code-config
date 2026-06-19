@@ -150,3 +150,4 @@ AskUserQuestion({
 - If sensitive files (.env, credentials, etc.) are detected, warn the user and exclude them.
 - If push fails, analyze the cause and inform the user.
 - If untracked files exist, ask the user whether to include them in the commit.
+- **Never offer to create a PR.** Do NOT ask "PR을 생성할까요?", do NOT suggest `gh pr create`, and do NOT mention creating a pull request in any form. PR creation is handled by the user directly on GitHub. After push/merge-strategy steps, end the process without referencing PR creation.
