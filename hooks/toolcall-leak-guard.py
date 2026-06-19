@@ -142,26 +142,41 @@ HANDOFF_MESSAGE = (
 )
 
 
+def block(reason: str) -> int:
+    """Prevent Stop and feed `reason` back to the model so it continues.
+
+    Per the Stop-hook spec, `exit 2` only writes to stderr (user-visible, NOT
+    delivered to the model), so the model never sees the retry instruction and
+    the turn just stalls. The supported way to continue the conversation with
+    model-visible feedback is exit 0 + a JSON `decision: "block"` + `reason` on
+    stdout. The model receives `reason` and acts on it automatically.
+    """
+    json.dump({"decision": "block", "reason": reason}, sys.stdout)
+    return 0
+
+
 def main() -> int:
     try:
         payload = json.load(sys.stdin)
     except json.JSONDecodeError:
         return 0
 
-    # NOTE: we intentionally do NOT early-return on stop_hook_active. This hook's
-    # whole purpose is to re-invoke the model (exit 2) until the leak clears, so
-    # honoring that flag would disable retries after the first one. The infinite
-    # loop is instead bounded by MAX_RETRIES: once the streak hits the cap we ask
-    # for a tool-call-free handoff, which is a clean turn that ends the streak.
     transcript_path = payload.get("transcript_path", "")
     streak = leak_streak(transcript_path)
 
     if streak == 0:
         return 0
 
-    message = HANDOFF_MESSAGE if streak >= MAX_RETRIES else RETRY_MESSAGE
-    print(message, file=sys.stderr)
-    return 2
+    if streak >= MAX_RETRIES:
+        return block(HANDOFF_MESSAGE)
+
+    # Honor stop_hook_active for the retry path so a model that keeps leaking
+    # can't loop forever: the streak cap (-> handoff) is the real exit, and the
+    # handoff turn is tool-call-free so it ends the streak and stops cleanly.
+    if payload.get("stop_hook_active"):
+        return 0
+
+    return block(RETRY_MESSAGE)
 
 
 if __name__ == "__main__":

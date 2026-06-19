@@ -16,21 +16,28 @@ on real events, and `Stop` is the one event that sees the finished response body
 The hook scans the transcript backwards over consecutive assistant turns and
 counts the leak streak (no on-disk counter needed):
 
-- **clean response** -> allow stop.
-- **leak, 1st-2nd in a row** -> `exit 2` + message telling the model to re-issue
-  the intended tool call in proper format. This does not stop the turn; the model
-  is re-invoked and retries automatically.
-- **leak, 3rd in a row** -> `exit 2` + message telling the model to STOP retrying
+All feedback is delivered via stdout JSON `{"decision": "block", "reason": ...}`
+with exit 0, NOT via `exit 2`. This is deliberate: per the Stop-hook spec, `exit
+2` writes only to stderr, which is user-visible but is NOT delivered to the
+model — so the model never sees the retry instruction and the turn just stalls
+(observed in practice). The `decision: "block"` + `reason` form is the supported
+way to prevent the stop AND feed model-visible feedback that continues the
+conversation automatically.
+
+- **clean response** -> allow stop (no output, exit 0).
+- **leak, 1st-2nd in a row** -> `block` + `reason` telling the model to re-issue
+  the intended tool call in proper format. The conversation continues and the
+  model retries automatically.
+- **leak, 3rd in a row** -> `block` + `reason` telling the model to STOP retrying
   and instead output a **session-handoff prompt** (goal, decisions made, work
   done, what remains, exact file paths/commands) as plain text with no tool calls.
 
-`stop_hook_active` is deliberately NOT honored: the hook's job is to re-invoke
-the model via `exit 2` until the leak clears, so early-returning on that flag
-would kill every retry after the first. The infinite loop is instead bounded by
-the streak cap — at the 3rd consecutive leak the hook asks for a tool-call-free
-handoff, a clean turn that ends the streak. Empty assistant turns (tool_use-only
-turns) interleaved between leaks are skipped when counting the streak, so they
-don't reset the count.
+`stop_hook_active` is honored on the retry path (1st-2nd leak) to bound the loop:
+without it a perpetually-leaking model could be re-invoked forever. The handoff
+path (3rd leak) fires regardless, because the handoff response is tool-call-free
+and so ends the streak and stops cleanly on the next turn. Empty assistant turns
+(tool_use-only turns) interleaved between leaks are skipped when counting the
+streak, so they don't reset the count.
 
 ## When the hook fires
 
