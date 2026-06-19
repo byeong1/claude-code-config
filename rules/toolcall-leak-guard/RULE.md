@@ -24,7 +24,13 @@ counts the leak streak (no on-disk counter needed):
   and instead output a **session-handoff prompt** (goal, decisions made, work
   done, what remains, exact file paths/commands) as plain text with no tool calls.
 
-`stop_hook_active` is honored to avoid infinite Stop loops.
+`stop_hook_active` is deliberately NOT honored: the hook's job is to re-invoke
+the model via `exit 2` until the leak clears, so early-returning on that flag
+would kill every retry after the first. The infinite loop is instead bounded by
+the streak cap — at the 3rd consecutive leak the hook asks for a tool-call-free
+handoff, a clean turn that ends the streak. Empty assistant turns (tool_use-only
+turns) interleaved between leaks are skipped when counting the streak, so they
+don't reset the count.
 
 ## When the hook fires
 

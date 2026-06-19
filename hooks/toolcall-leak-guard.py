@@ -124,6 +124,11 @@ def leak_streak(transcript_path: str) -> int:
     ]
     streak = 0
     for text in reversed(assistant_texts):
+        # Empty assistant turns (tool_use-only turns with no text body) are
+        # interleaved with leaks in the transcript. Skip them so they don't
+        # break the streak — only a real, non-leaking text turn ends it.
+        if not text.strip():
+            continue
         if has_leak(text):
             streak += 1
         else:
@@ -154,10 +159,11 @@ def main() -> int:
     except json.JSONDecodeError:
         return 0
 
-    # Avoid an infinite Stop loop if the model is already being re-invoked by us.
-    if payload.get("stop_hook_active"):
-        return 0
-
+    # NOTE: we intentionally do NOT early-return on stop_hook_active. This hook's
+    # whole purpose is to re-invoke the model (exit 2) until the leak clears, so
+    # honoring that flag would disable retries after the first one. The infinite
+    # loop is instead bounded by MAX_RETRIES: once the streak hits the cap we ask
+    # for a tool-call-free handoff, which is a clean turn that ends the streak.
     transcript_path = payload.get("transcript_path", "")
     streak = leak_streak(transcript_path)
 
