@@ -167,6 +167,53 @@
 
 ---
 
+### 7. `toolcall-leak-guard` Stop 훅 (자동 leak 탐지·재시도·핸드오프 유도)
+
+**상태**: Rejected (배제) — 자동 훅을 제거하고 `/handoff` 수동 커맨드로 전환
+
+**배경**:
+tool call이 `tool_use`로 직렬화되지 못하고 `<invoke>`/`<parameter>` XML이 응답
+본문에 텍스트로 새어나오는 leak이 발생함. 원인은 in-context few-shot
+self-poisoning으로, 한 번 오염된 히스토리가 이후 호출을 같은 깨진 포맷으로 계속
+복제함. 동일 세션 재시도로는 복구 불가, **유일한 복구책은 오염 히스토리가 없는 새
+세션**(`/clear` 또는 새 창). (근거: anthropics/claude-code #62344 — Closed as
+duplicate, #66400 — Open. 트리거로 긴 세션·높은 context·markup이 빽빽한 스킬 파일
+로딩 직후가 반복 보고됨.)
+
+기존에는 Stop 훅(`hooks/toolcall-leak-guard.py`)이 leak streak를 세어 1~2회는
+재시도를 유도하고 3회째에 핸드오프 프롬프트 작성을 강제했음.
+
+**배제 이유**:
+- 자동 재시도(1~2회)는 self-poisoning 특성상 **악화 요인**임. 깨진 템플릿을
+  히스토리에 더 쌓아 다음 호출의 실패 확률을 높임(#62344에서 4회 연속 동일 실패
+  관측). 즉 훅의 재시도 경로가 문제를 키우는 방향으로 작동할 수 있음.
+- 복구의 본질은 "새 세션으로 전환"이라는 **사람의 판단**이 필요한 동작임. 자동
+  훅이 매 Stop마다 transcript를 역스캔하는 상시 비용을 치르는 것에 비해, leak을
+  목격한 사용자가 `/handoff`를 직접 부르는 편이 비용 대비 명확함(평가 기준 4).
+- 핸드오프 산출물은 본질적으로 tool-call-free plain text라 모델이 커맨드 절차만
+  따르면 충분히 생성 가능 → 자동 강제(훅)가 꼭 필요한 동작은 아님(평가 기준 1).
+
+**제거 범위**: `settings.json`의 Stop 훅 등록, `hooks/toolcall-leak-guard.py`,
+`rules/toolcall-leak-guard/RULE.md` 전부 삭제. 대체재로 `commands/handoff.md`
+(수동 트리거) 신설.
+
+**재평가 트리거**:
+- leak 발생 빈도가 잦아져 매번 수동 `/handoff` 호출이 번거로워질 때 → 자동
+  탐지의 가치가 수동 호출 비용을 넘어섬.
+- 향후 하네스가 bare `<invoke>`를 자동 wrap/repair하게 되면(#62344가 제안한
+  harness-level auto-repair) leak 자체가 사라져 커맨드도 불필요해짐 → 그때 커맨드도
+  제거 검토.
+
+**도입하게 된다면의 방향**:
+- 자동 재시도(1~2회) 경로는 부활시키지 않음 — self-poisoning을 악화시키므로.
+- 부활시킨다면 streak 1회부터 **즉시 핸드오프 유도**(재시도 생략)로 단순화.
+- 또는 3-1의 `/clear` 자동 주입과 묶어 "핸드오프 저장 → clear"를 반자동화.
+
+> 주의: 위 3-1 항목 본문은 이 훅이 존재하던 시점에 작성됨. "핸드오프와 목적 충돌"
+> 서술은 이제 `/handoff` 수동 커맨드를 가리키는 것으로 읽으면 됨.
+
+---
+
 ## 재평가 주기
 
 - **분기마다 1회** 본 문서를 훑으며 재평가 트리거가 발생했는지 점검
