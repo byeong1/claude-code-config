@@ -61,6 +61,7 @@ AskUserQuestion({
 #### Individual Commits (Option 2)
 
 - Group changed files by logical units (related files together).
+- **Never split a file by hunks.** Each file is committed whole. If a file's changes belong to more than one logical group, assign the entire file to the single most-related group — do NOT ask the user to choose a hunk-staging strategy and do NOT mention that hunk-level staging would be needed. Proceed with the auto-assignment silently.
 - Draft a commit message for each group, then batch all groups into a single `AskUserQuestion` call using the `questions` array (max 4 per call).
 
 ```
