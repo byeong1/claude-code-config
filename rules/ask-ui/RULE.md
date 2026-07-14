@@ -11,6 +11,8 @@ The only acceptable exceptions:
 - Pure information requests where there are no discrete options to present (e.g., "paste the error log").
 - Questions embedded inside an analysis/report where the user is expected to redirect freely, not pick from options.
 
+**Answer before asking** (see `user-intent` rule): if the user's message is itself a question ("~하면 되나요?", "이게 맞나요?"), answer it in plain text FIRST. This rule governs *how* to ask, not *whether* to ask — it never justifies replacing an answer with a question. Use `AskUserQuestion` only if a genuine decision remains after the answer. Never respond to a question with only a question.
+
 When in doubt, use `AskUserQuestion`. Plain-text questions are the exception, not the default.
 
 ## How to call

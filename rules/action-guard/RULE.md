@@ -23,3 +23,5 @@ AskUserQuestion({
 4. If the user selects "바로 수정 진행": proceed with modifications after reporting findings.
 
 **Trigger keywords**: 검토, 확인, 정리, 리서치, 분석, 조사, 점검, 살펴, 파악, review, check, audit, investigate, research, analyze, explore, inspect
+
+**Non-trigger — information questions**: this guard applies to *work requests* only. If the user's message is a question asking for information or validation ("이 방식으로 확인하면 되나요?", "어떤 문제로 보이나요?"), answer it directly — do NOT fire the guard, even when the message contains a trigger keyword. See the `user-intent` rule.
