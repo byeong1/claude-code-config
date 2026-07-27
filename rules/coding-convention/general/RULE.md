@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.{ts,tsx,js,jsx,mjs,cjs,vue,svelte,py,rb,go,rs,java,kt,c,cc,cpp,h,hpp,cs,php,swift,sql,sh,bash}"
+---
+
 # General Coding Convention
 
 **Naming:**
