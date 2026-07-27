@@ -66,7 +66,7 @@ If any check returns FAIL:
 1. Stop. Do NOT proceed to "task complete" framing.
 2. Report all failures to the user with the verification output.
 3. Propose remediation (rollback, fix-forward, scope adjustment).
-4. Use `AskUserQuestion` per the `ask-ui` rule for the user's decision.
+4. Use `AskUserQuestion` per the `interaction` rule for the user's decision.
 
 Never silently fix a FAIL and re-run verification — surface it first.
 

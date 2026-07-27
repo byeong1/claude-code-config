@@ -55,7 +55,7 @@
 
 **배제 이유**:
 - Feedback Loop과 같은 이유로 모델 자체 능력과 외부 도구로 대체됨
-- `action-guard`가 **작업 시작 시점**의 가드를 제공하고 있어, 시작 가드 + 모델 자체 검증 + 외부 도구의 조합이 이미 사실상의 검증 체계를 구성
+- action guard(현 `interaction` 규칙, 통합 전 `action-guard`)가 **작업 시작 시점**의 가드를 제공하고 있어, 시작 가드 + 모델 자체 검증 + 외부 도구의 조합이 이미 사실상의 검증 체계를 구성
 
 **재평가 트리거**:
 - 동일 실수가 여러 작업에서 반복 관찰될 때
@@ -211,6 +211,67 @@ duplicate, #66400 — Open. 트리거로 긴 세션·높은 context·markup이 �
 
 > 주의: 위 3-1 항목 본문은 이 훅이 존재하던 시점에 작성됨. "핸드오프와 목적 충돌"
 > 서술은 이제 `/handoff` 수동 커맨드를 가리키는 것으로 읽으면 됨.
+
+---
+
+### 8. `file-reading` 규칙
+
+**상태**: Rejected (배제) — Opus 5 전환에 따른 재평가로 삭제
+
+**배제 이유**:
+- 규칙 본문에 재평가 조건이 직접 명시되어 있었음:
+  *"Re-evaluate when the model consistently applies these habits on its own."*
+- Opus 5 기준 Grep-first 탐색, 목적 있는 읽기, 대용량 파일의 offset/limit 사용은
+  모두 기본 동작으로 관찰됨 → 평가 기준 1번(모델이 이미 잘 함)에 해당
+- "Never re-read a file you've already read"는 하네스가 이미 강제(Edit/Write 후
+  재확인 불필요를 도구 레벨에서 안내) → 평가 기준 2번에도 해당
+
+**재평가 트리거**:
+- 컨텍스트 낭비형 읽기(전체 파일 무목적 읽기)가 반복 관찰될 때
+- 모델 다운그레이드(Haiku 등 소형 모델 상시 사용)로 기본 동작이 바뀔 때
+
+---
+
+### 9. 규칙 파일 분산 구조 (질문 규칙 4중 분할)
+
+**상태**: Rejected (배제) — 통합으로 전환
+
+**배경**:
+`ask-ui`(55줄) + `user-intent`(29줄) + `action-guard`(27줄) +
+`coding-discipline` 1~3번이 각각 별도 파일로 존재하며 상호 참조로만 정합성이
+유지되고 있었음. 상시 로드 294줄 중 약 130줄(44%)이 "언제/어떻게 묻는가" 한 주제에
+할당됨.
+
+**배제 이유**:
+- 분량보다 **판정 복잡도**가 문제였음. 하나의 메시지를 분류하려면 4개 파일을 동시에
+  참조해야 했고, 각 파일이 서로를 "see the X rule"로 가리키는 구조라 순서가 불명확
+- 상호 참조 문장 자체가 토큰이며, 통합 시 자연 소멸
+- Anthropic 공식 문서의 실패 패턴 "over-specified CLAUDE.md — 너무 길면 중요한
+  규칙이 노이즈에 묻힌다"에 해당할 위험
+
+**전환 결과**:
+- `rules/interaction/RULE.md` 신설 — 메시지 분류 → action guard → 질문 필요성 판단
+  → AskUserQuestion 사용법 → 푸시백 → 반박 평가의 **순차 6단계**로 재구성
+- `response-brevity` + `response-style` → `rules/response/` 병합
+- `coding-discipline` 4,5,6번 → `editing/`으로 분리 후 `paths:` frontmatter로
+  조건부화
+- `coding-discipline` 7번 + `subagent-discipline` → `execution/`으로 통합.
+  7번만 남은 `coding-discipline`은 이름이 내용(단계별 검증)을 설명하지 못했고,
+  공식 문서의 "Each file should cover one topic" 기준에 맞춰 "작업을 어떻게
+  굴릴 것인가"라는 한 주제로 재구성
+- `coding-convention/general`에 `paths:` frontmatter 추가 (조건부화)
+
+**전제 가정 (재평가 트리거)**:
+- 통합 파일이 공식 권장인 파일당 200줄에 근접하면 재분할 검토 (현재 최대
+  `interaction` 98줄)
+- 단, 재분할 시에도 "질문 판정"은 한 파일에 유지할 것 — 분산이 원인이었음
+
+**상시 로드 총량에 대한 판단 (2026-07-27)**:
+정리 결과 상시 294 → 246줄. 200줄 미만까지 줄이자는 논의가 있었으나 **보류**.
+공식 기준 200줄은 *파일당*(`per CLAUDE.md file`) 수치이며 총량 상한이 아님.
+현재 최대 파일은 98줄로 절반 수준이고, 규칙이 무시되는 사례가 실측되지 않았음.
+지표 없이 조항을 더 자르면 기능 손실만 남으므로, 준수율 문제가 실제로 관측될 때
+근거를 갖고 재검토한다.
 
 ---
 

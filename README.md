@@ -98,7 +98,7 @@ foreach ($name in @('rules','skills','commands','agents','settings.json')) {
 
 Claude Code 세션을 새로 열고 다음을 확인합니다.
 
-- 규칙이 반영되었는지 (예: 파일 수정 시도 시 `action-guard`가 발동하는지)
+- 규칙이 반영되었는지 (예: 검토 요청 시 `interaction` 규칙의 action guard가 발동하는지)
 - 스킬이 목록에 뜨는지
 - 슬래시 커맨드가 작동하는지 (`/follow-up`, `/commit` 등)
 

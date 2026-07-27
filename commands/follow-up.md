@@ -13,7 +13,7 @@ description: Restore prior session work context, or analyze the dependency struc
 
 Before starting the procedure, MUST run `ToolSearch({ query: "select:AskUserQuestion" })` to fetch the tool schema. Do NOT substitute with plain text questions.
 
-**Every `AskUserQuestion` call below MUST include `multiSelect` (boolean) on every question object.** Omitting `multiSelect` triggers `Invalid tool parameters` and aborts the flow. Verify the field is present in every question object before invoking the tool. See `~/.claude/rules/ask-ui/RULE.md` for the full required-field checklist.
+**Every `AskUserQuestion` call below MUST include `multiSelect` (boolean) on every question object.** Omitting `multiSelect` triggers `Invalid tool parameters` and aborts the flow. Verify the field is present in every question object before invoking the tool. See `~/.claude/rules/interaction/RULE.md` for the full required-field checklist.
 
 ## Procedure
 
@@ -85,7 +85,7 @@ Output in this format:
 
 #### B-1. Target File Input
 
-`AskUserQuestion` requires `options.minItems: 2`. Free-text input is provided automatically by the tool's built-in **Other** button — do NOT add a manual "직접 입력" / "경로 입력" option. Doing so duplicates the auto-Other and violates `~/.claude/rules/ask-ui/RULE.md`.
+`AskUserQuestion` requires `options.minItems: 2`. Free-text input is provided automatically by the tool's built-in **Other** button — do NOT add a manual "직접 입력" / "경로 입력" option. Doing so duplicates the auto-Other and violates `~/.claude/rules/interaction/RULE.md`.
 
 **Build the options array dynamically:**
 
@@ -168,7 +168,7 @@ External packages: <pkg1>, <pkg2>, ...
 ## Rules
 
 - Write all user-facing output in Korean (final reports, summaries, prompts).
-- Use Unicode box-drawing characters (`├──`, `└──`, `│`) only inside the dependency tree code block. Markdown tables MUST follow the response-style rule and use minimal separators (`|-|-|`).
+- Use Unicode box-drawing characters (`├──`, `└──`, `│`) only inside the dependency tree code block. Markdown tables MUST follow the `response` rule and use minimal separators (`|-|-|`).
 - If a file cannot be read or parsed, mark it as `(읽기 실패)` and continue with the rest of the analysis.
 - If the analysis target exceeds 50 files, inform the user and ask whether to continue.
 - In Mode A, silently skip the memory step if `~/.claude/projects/` does not exist or has no entry for this project.

@@ -148,6 +148,12 @@ AskUserQuestion({
 - **Match the existing commit message style from the Context section's recent commits. This takes priority over any other format convention.** Examples of patterns to detect and mirror: `[REFACTOR] 메시지`, `[FEAT] 메시지`, `refactor(scope): 메시지`, etc.
 - Only fall back to conventional commits format (feat, fix, refactor, docs, chore, etc.) when the repository has no prior commit history to mirror.
 - Write commit messages in Korean.
+- **Always pass the message with `-m` flags. Never use a heredoc, a PowerShell here-string (`@'…'@`), or `-F -`.** These break across shells and have silently corrupted the commit subject before.
+  - Subject only: `git commit -m "제목"`
+  - Subject + body: `git commit -m "제목" -m "본문 첫 줄
+본문 둘째 줄"`
+  - Repeat `-m` for each paragraph; Git joins them with a blank line.
+  - Keep double quotes as the only quoting mechanism. If the message contains a double quote, rewrite the message to avoid it rather than escaping.
 - If sensitive files (.env, credentials, etc.) are detected, warn the user and exclude them.
 - If push fails, analyze the cause and inform the user.
 - If untracked files exist, ask the user whether to include them in the commit.

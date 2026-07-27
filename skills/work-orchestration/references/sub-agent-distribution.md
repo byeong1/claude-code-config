@@ -62,7 +62,7 @@ Response constraint: Final response under {N} characters. List outcomes only, no
 2. **Task**: specific changes (name exact functions/classes/interfaces)
 3. **Rationale**: what changed in the parent file and why this file must be updated
 4. **Downstream dependents**: full nested spec (File / Task / Rationale / Downstream dependents) for every child the sub-agent must spawn. The parent — not the sub-agent — resolves dependencies in Step 1 and writes the child specs here. Sub-agents spawn children verbatim from this list without re-analyzing imports.
-5. **Response constraint**: maximum character count and "outcomes only" directive, per the global `subagent-discipline` rule
+5. **Response constraint**: maximum character count and "outcomes only" directive, per the global `execution` rule
 
 ## Prohibited Actions
 
