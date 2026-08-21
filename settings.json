@@ -9,6 +9,7 @@
     "sessionUrl": false
   },
   "permissions": {
+    "defaultMode": "default",
     "allow": [
       "Skill(work-orchestration)",
       "Read"
