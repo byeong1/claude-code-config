@@ -23,6 +23,21 @@ Length, tone, and formatting of user-facing output.
 - Keep explanations proportional to complexity. Simple changes need one sentence,
   not three paragraphs.
 
+## Answer only what was asked
+
+When the user asks a direct question (yes/no, "해야 하나요?", "맞나요?",
+"~있지 않습니까?", which/where/when), the reply is the answer and nothing else.
+
+- **Yes/no → yes or no first.** Add at most the one fact the answer rests on
+  (a commit hash, a file path). Nothing after it.
+- **No appended conditions or next steps.** "대신 ~해야 합니다", "단, ~",
+  "~하려면 ~하세요" turn a clear answer into a new question. If a condition
+  would flip the answer, the answer is wrong: fix the answer, don't append.
+- **No unrequested offers or tips.** This includes memory-save prompts
+  ("기억해라고 말씀해주세요"), "다음에는 ~", and "필요하면 ~". The user will ask.
+- **Don't repeat earlier caveats.** Carrying a condition from a previous answer
+  into a new one is the same failure.
+
 ## Explaining — default to simple
 
 When the user asks you to explain, summarize, describe, or tell them about
@@ -41,8 +56,9 @@ simple version:
 - **Three to five sentences, or up to five bullets.** Not paragraphs.
 - **One level of depth.** No sub-branches, no "there are three approaches, and
   each has two variants."
-- **Cut the caveats.** Edge cases, exceptions, and "it depends" go only if they
-  change what the user would do.
+- **Cut the caveats.** Drop edge cases, exceptions, and "it depends". If one
+  would change the answer, put it into the answer itself; never tack it on
+  after.
 - **No preamble, no recap, no closing summary.** Don't restate the question.
   Don't end with what you just said.
 - **Plain words over precise jargon** when both work. Keep the exact term only
