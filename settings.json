@@ -9,13 +9,12 @@
     "sessionUrl": false
   },
   "permissions": {
-    "defaultMode": "default",
     "allow": [
       "Skill(work-orchestration)",
       "Read"
-    ]
+    ],
+    "defaultMode": "default"
   },
-  "model": "opus[1m]",
   "hooks": {
     "PreToolUse": [
       {
@@ -80,6 +79,14 @@
   "language": "korean",
   "alwaysThinkingEnabled": false,
   "effortLevel": "medium",
+  "modelSettings": {
+    "claude-opus-5": {
+      "effortLevel": "high"
+    },
+    "claude-opus-5-5": {
+      "effortLevel": "xhigh"
+    }
+  },
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "voice": {
@@ -88,6 +95,7 @@
   },
   "skipWorkflowUsageWarning": true,
   "autoCompactEnabled": false,
+  "switchModelsOnFlag": true,
   "remoteControlAtStartup": false,
   "agentPushNotifEnabled": true,
   "voiceEnabled": true
